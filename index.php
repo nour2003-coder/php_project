@@ -1,7 +1,6 @@
 <?php
-include 'db.php';
-
-// Initialize $message_erreur
+include 'db.php'; // Include the database connection
+$message_erreur = "";
 $message_erreur = "";
 
 if (isset($_POST['add'])) {
@@ -30,6 +29,26 @@ if (isset($_POST['add'])) {
         }
     }
 }
+// Initialize variables for filtering and sorting
+$filter_status = isset($_GET['filter_status']) ? $_GET['filter_status'] : '';
+$sort_order = isset($_GET['sort_order']) ? $_GET['sort_order'] : '';
+
+// Build the SQL query
+$sql = "SELECT * FROM Livres";
+
+// Apply filtering
+if ($filter_status === 'read') {
+    $sql .= " WHERE statut = 1";
+} elseif ($filter_status === 'unread') {
+    $sql .= " WHERE statut = 0";
+}
+
+// Apply sorting
+if ($sort_order === 'rating_desc') {
+    $sql .= " ORDER BY note DESC";
+}
+
+$result = $conn->query($sql);
 ?>
 
 <!DOCTYPE html>
@@ -43,9 +62,7 @@ if (isset($_POST['add'])) {
     <div class="titre">
         <img width=50 src="img/stack-of-books.png" alt="bookimg">
         <h2>Library Collection</h2>
-
     </div>
-    
     <div class="add">
     <h3 class="titreadd">Add a New Book</h3>
     
@@ -67,52 +84,67 @@ if (isset($_POST['add'])) {
         <input type="number" id='rating' name="note" min="1" max="5" required><br><br>
 
         <button class="submit" type="submit" name="add">Add Book</button>
-    </form>
-
-    </div>
-    
-    
+    </form></div>
     <div class="erreur">
         <?php echo $message_erreur; ?>
     </div>
+    <div class="aff">
+    
+    <!-- Filter and Sort Form -->
+    <div class="controls position">
+        <form method="GET" action="">
+            <label for="filter_status">Filter by Status:</label>
+            <select name="filter_status" id="filter_status">
+                <option value="">All</option>
+                <option value="read" <?php echo $filter_status === 'read' ? 'selected' : ''; ?>>Read</option>
+                <option value="unread" <?php echo $filter_status === 'unread' ? 'selected' : ''; ?>>Unread</option>
+            </select>
 
-    <table cellpadding="5" cellspacing="0">
-        <thead>
-            <tr>
-                <th>Title</th>
-                <th>Author</th>
-                <th>Year of Publication</th>
-                <th>Status</th>
-                <th>Rating</th>
-                <th>Actions</th>
-            </tr>
-        </thead>
-        <tbody>
-        <?php
-            // Fetch and display books from the database
-            $sql = "SELECT * FROM Livres";
-            $result = $conn->query($sql);
+            <label for="sort_order">Sort by:</label>
+            <select name="sort_order" id="sort_order">
+                <option value="">Default</option>
+                <option value="rating_desc" <?php echo $sort_order === 'rating_desc' ? 'selected' : ''; ?>>Rating (Descending)</option>
+            </select>
 
-            if ($result->num_rows > 0) {
-                while ($row = $result->fetch_assoc()) {
-                    echo "<tr>
-                        <td>{$row['titre']}</td>
-                        <td>{$row['auteur']}</td>
-                        <td>{$row['annee_publication']}</td>
-                        <td>" . ($row['statut'] ? 'Read' : 'Unread') . "</td>
-                        <td>{$row['note']}</td>
-                        <td>
-                        <button class='button edit'><a href='edit.php?id={$row['id']}'>Edit</a></button>
-                             |
-                           <button class='button delete'> <a  href='delete.php?id={$row['id']}' onclick='return confirm(\"Are you sure?\");'>Delete</a></button>
-                        </td>
-                    </tr>";
+            <button type="submit">Apply</button>
+        </form>
+    </div>
+
+    <!-- Display Books -->
+    <div class="aff">
+        <table cellpadding="5" cellspacing="0">
+            <thead>
+                <tr>
+                    <th>Title</th>
+                    <th>Author</th>
+                    <th>Year of Publication</th>
+                    <th>Status</th>
+                    <th>Rating</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+            <?php
+                if ($result->num_rows > 0) {
+                    while ($row = $result->fetch_assoc()) {
+                        echo "<tr>
+                            <td>{$row['titre']}</td>
+                            <td>{$row['auteur']}</td>
+                            <td>{$row['annee_publication']}</td>
+                            <td>" . ($row['statut'] ? 'Read' : 'Unread') . "</td>
+                            <td>{$row['note']}</td>
+                            <td>
+                                <button class='button edit'><a href='edit.php?id={$row['id']}'>Edit</a></button> |
+                                <button class='button delete'><a href='delete.php?id={$row['id']}' onclick='return confirm(\"Are you sure?\");'>Delete</a></button>
+                            </td>
+                        </tr>";
+                    }
+                } else {
+                    echo "<tr><td colspan='6'>No books found</td></tr>";
                 }
-            } else {
-                echo "<tr><td colspan='7'>No books found</td></tr>";
-            }
-        ?>
-        </tbody>
-    </table>
+            ?>
+            </tbody>
+        </table>
+    </div>
 </body>
 </html>

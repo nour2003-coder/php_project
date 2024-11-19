@@ -89,3 +89,13 @@ button {
 .submit:focus-visible {
   outline-offset: 1px;
 }
+.aff {
+  display: flex;
+  flex-direction: column;
+}
+.position {
+  padding: 5px;
+}
+.controls {
+  text-align: left;
+}
