@@ -28,9 +28,12 @@ form {
 .titre {
   display: flex;
   gap: 10px;
+  margin-left: -10px;
+  margin-top: -10px;
+  margin-bottom: 10px;
 }
 .titre img {
-  border-right: 10px;
+  margin-left: 10px;
 }
 table {
   width: 90%;
@@ -98,4 +101,10 @@ button {
 }
 .controls {
   text-align: left;
+}
+.titre {
+  background-color: #333;
+}
+.titre h2 {
+  color: #f4f4f4;
 }
